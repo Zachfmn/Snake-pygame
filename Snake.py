@@ -1,5 +1,6 @@
 import pygame
 import random
+import sqlite3
 
 pygame.init()
 
@@ -26,6 +27,27 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont("Comic Sans", 25)
 
 
+
+# db stuff
+def get_or_create_player(conn, name): # check if player exists or create new player id if they don't
+    cursor = conn.cursor() # 'pen' for writing SQL statements
+    cursor.execute("SELECT id FROM players WHERE name = ?", (name,)) # select unique id(s) from playerbase where name matches
+    row = cursor.fetchone() # returns matching row as a tuple or returns nothing if no match
+
+    if row: # if player exists
+        return row[0]
+    else: # create new player
+        cursor.execute("INSERT INTO players (name) VALUES (?)", (name,))
+        conn.commit()
+        return cursor.lastrowid
+
+def save_score(conn, player_id, score):
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO game_sessions (player_id, score) VALUES (?, ?)", (player_id, score)) # save score to unique player id
+    conn.commit()
+
+
+
 def random_food_position(snake):
     while True:
         pos = random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT)
@@ -44,8 +66,13 @@ def reset_game():
 
 
 def main():
+    conn = sqlite3.connect("Snake.db") # connect database
+    player_name = input("Enter your name: ")
+    player_id = get_or_create_player(conn, player_name)
+
     snake, direction, food, score, game_over = reset_game() # reset everything upon new game
     running = True # start game loop
+    already_saved = False
 
     while running:
         for event in pygame.event.get():
@@ -58,6 +85,7 @@ def main():
                 if game_over:
                     if event.key == pygame.K_SPACE: # if game over, press SPACE to restart
                         snake, direction, food, score, game_over = reset_game()
+                        already_saved = False
                     continue # continue running game loop
 
                 if event.key == pygame.K_UP and direction != (0, 1): # unless facing down
@@ -86,6 +114,12 @@ def main():
                 else:
                     snake.pop() # keeps snake the same length ('pops' out last tail cell as new head is created)
 
+        # saving to database
+        if game_over and not already_saved:
+            save_score(conn, player_id, score)
+            already_saved = True
+
+
         # draw
         screen.fill(BLACK) # background is black. Replaces the screen every frame.
 
@@ -105,6 +139,7 @@ def main():
         clock.tick(SPEED) # speed of snake
 
 
+    conn.close() # close database connection
     pygame.quit()
 
 
