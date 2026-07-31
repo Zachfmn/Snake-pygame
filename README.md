@@ -1,5 +1,5 @@
 # Snake-pygame
-Make a simple snake game in python.
+Make a simple snake game in python to practise pygame and database creation.
 
 Pygame is needed! (pip install pygame)
 
