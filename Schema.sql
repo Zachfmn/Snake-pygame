@@ -1,3 +1,5 @@
+-- Scheme for Snake.db
+
 CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
