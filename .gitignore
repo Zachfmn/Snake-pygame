@@ -1,0 +1,5 @@
+Snake.db
+__pycache__/
+*.pyc
+.idea/
+venv/
