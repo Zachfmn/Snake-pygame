@@ -60,13 +60,13 @@ def main():
                         snake, direction, food, score, game_over = reset_game()
                     continue # continue running game loop
 
-                if event.type == pygame.K_UP and direction != (0, 1): # unless facing down
+                if event.key == pygame.K_UP and direction != (0, 1): # unless facing down
                     direction = (0, -1) # face up
-                elif event.type == pygame.K_DOWN and direction != (0, -1): # unless facing up
+                elif event.key == pygame.K_DOWN and direction != (0, -1): # unless facing up
                     direction = (0, 1) # face down
-                elif event.type == pygame.K_LEFT and direction != (1, 0): # unless facing right
+                elif event.key == pygame.K_LEFT and direction != (1, 0): # unless facing right
                     direction = (-1, 0) # face left
-                elif event.type == pygame.K_RIGHT and direction != (-1, 0): # unless facing left
+                elif event.key == pygame.K_RIGHT and direction != (-1, 0): # unless facing left
                     direction = (1, 0) # face right
 
         if not game_over: # while in-game
