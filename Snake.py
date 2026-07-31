@@ -104,7 +104,9 @@ def main():
         pygame.display.flip() # show drawings
         clock.tick(SPEED) # speed of snake
 
+
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()
