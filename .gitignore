@@ -1,6 +1,8 @@
 Snake.db
-snake.spec
 __pycache__/
 *.pyc
 .idea/
 venv/
+build/
+dist/
+*.spec
