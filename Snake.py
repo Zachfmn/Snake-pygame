@@ -1,6 +1,7 @@
 import pygame
 import random
 import sqlite3
+import sys
 
 pygame.init()
 
@@ -22,13 +23,31 @@ WHITE = (255, 255, 255)
 # window
 screen = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption(title="Snake")
-pygame.display.set_icon(pygame.image.load("images/icon.png"))
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Comic Sans", 25)
 
 
-
 # db stuff
+def create_tables(conn):
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS players (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS game_sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            player_id INTEGER NOT NULL,
+            score INTEGER NOT NULL,
+            played_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (player_id) REFERENCES players(id)
+        )
+    """)
+    conn.commit()
+
 def get_or_create_player(conn, name): # check if player exists or create new player id if they don't
     cursor = conn.cursor() # 'pen' for writing SQL statements
     cursor.execute("SELECT id FROM players WHERE name = ?", (name,)) # select unique id(s) from playerbase where name matches
@@ -56,7 +75,7 @@ def get_player_name(screen, font):
 
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
+                sys.exit()
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN and name.strip() != "":
@@ -116,6 +135,7 @@ def reset_game():
 
 def main():
     conn = sqlite3.connect("Snake.db") # connect database
+    create_tables(conn)
     player_name = get_player_name(screen, font)
     player_id = get_or_create_player(conn, player_name)
 
