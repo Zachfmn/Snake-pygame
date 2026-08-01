@@ -47,6 +47,42 @@ def save_score(conn, player_id, score):
     conn.commit()
 
 
+def get_player_name(screen, font):
+    name = ""
+    entering_name = True
+
+    while entering_name:
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and name.strip() != "":
+                    entering_name = False
+                elif event.key == pygame.K_BACKSPACE and name.strip() != "":
+                    name = name[:-1]
+                else:
+                    name += event.unicode
+
+        screen.fill(BLACK)
+
+        prompt = font.render("Enter your name: ", True, WHITE)
+        screen.blit(prompt, (WIDTH // 2 - prompt.get_width() // 2, HEIGHT // 2 - 60)) # position above center of screen
+
+        box = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 20, 200, 40)
+        pygame.draw.rect(screen, WHITE, box, 2)
+
+        name_surface = font.render(name, True, WHITE)
+        screen.blit(name_surface, (box.x + 10, box.y + 3))
+
+        pygame.display.flip()
+        clock.tick(SPEED)
+
+    return name
+
+
 
 def random_food_position(snake):
     while True:
@@ -67,7 +103,7 @@ def reset_game():
 
 def main():
     conn = sqlite3.connect("Snake.db") # connect database
-    player_name = input("Enter your name: ")
+    player_name = get_player_name(screen, font)
     player_id = get_or_create_player(conn, player_name)
 
     snake, direction, food, score, game_over = reset_game() # reset everything upon new game
