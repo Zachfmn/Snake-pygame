@@ -1,5 +1,5 @@
 Snake.db
-snake.spec
+*.spec
 __pycache__/
 *.pyc
 .idea/
