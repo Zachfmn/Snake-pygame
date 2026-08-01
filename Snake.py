@@ -82,6 +82,19 @@ def get_player_name(screen, font):
 
     return name
 
+def get_leaderboard(conn, limit=10):
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT players.name, game_sessions.score
+        FROM game_sessions
+        JOIN players ON game_sessions.player_id = players.id
+        ORDER BY game_sessions.score DESC
+        LIMIT ?
+    """, (limit,)) # find top 10 scores
+    return cursor.fetchall() # get every matching row as list of tuples
+
+
+
 
 
 def random_food_position(snake):
@@ -109,6 +122,8 @@ def main():
     snake, direction, food, score, game_over = reset_game() # reset everything upon new game
     running = True # start game loop
     already_saved = False
+
+    leaderboard = []
 
     while running:
         for event in pygame.event.get():
@@ -154,22 +169,33 @@ def main():
         if game_over and not already_saved:
             save_score(conn, player_id, score)
             already_saved = True
+            leaderboard = get_leaderboard(conn)
 
 
         # draw
         screen.fill(BLACK) # background is black. Replaces the screen every frame.
+        if not game_over:
+            for segment in snake:
+                draw_cell(segment, GREEN) # snake is green
+            draw_cell(food, RED) # food is red
 
-        for segment in snake:
-            draw_cell(segment, GREEN) # snake is green
-        draw_cell(food, RED) # food is red
+            score_surface = font.render(f"Score: {score}", True, WHITE) # creates text
+            screen.blit(score_surface, (10, 10)) # draws the text
 
-        score_surface = font.render(f"Score: {score}", True, WHITE) # creates text
-        screen.blit(score_surface, (10, 10)) # draws the text
+        else: # leaderboard in top left
+            title = font.render("Leaderboard", True, WHITE)
+            screen.blit(title, (20, 20))
 
-        if game_over:
-            msg = font.render("Game Over - press SPACE to restart", True, WHITE)
-            msg_pos = msg.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-            screen.blit(msg, msg_pos) # draw message in the center of the screen
+            for i, (name, entry_score) in enumerate(leaderboard): # enumerate gives both index and item
+                line = font.render(f"{i + 1}. {name} - {entry_score}", True, WHITE) # rank, name, score
+                screen.blit(line, (20, 60 + i * 25)) # 'i * 25' spaces the rankings out by 25px
+
+            msg = font.render("Game Over", True, WHITE)
+            screen.blit(msg, (250, HEIGHT // 2 - 40))
+
+            restart_msg = font.render("Press SPACE to restart", True, WHITE)
+            screen.blit(restart_msg, (250, HEIGHT // 2))
+
 
         pygame.display.flip() # show drawings
         clock.tick(SPEED) # speed of snake
